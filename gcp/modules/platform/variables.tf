@@ -260,6 +260,12 @@ variable "cloud_armor" {
     waf_preview               = optional(bool, true)
     login_rate_limit_count    = optional(number, 20)
     login_rate_limit_window   = optional(number, 60)
+    signup_rate_limit_count   = optional(number, 5)
+    signup_rate_limit_window  = optional(number, 60)
+    reset_rate_limit_count    = optional(number, 5)
+    reset_rate_limit_window   = optional(number, 60)
+    global_rate_limit_count   = optional(number, 1000)
+    global_rate_limit_window  = optional(number, 60)
   })
   default = {}
 }

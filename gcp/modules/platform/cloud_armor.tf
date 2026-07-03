@@ -93,6 +93,29 @@ resource "google_compute_security_policy" "app" {
   rule {
     action      = "throttle"
     priority    = 2100
+    description = "Rate limit signup attempts"
+
+    match {
+      expr {
+        expression = "request.path.matches('/register') && request.method == 'POST'"
+      }
+    }
+
+    rate_limit_options {
+      conform_action = "allow"
+      exceed_action  = "deny(429)"
+      enforce_on_key = "IP"
+
+      rate_limit_threshold {
+        count        = var.cloud_armor.signup_rate_limit_count
+        interval_sec = var.cloud_armor.signup_rate_limit_window
+      }
+    }
+  }
+
+  rule {
+    action      = "throttle"
+    priority    = 2200
     description = "Rate limit password reset attempts"
 
     match {
@@ -107,8 +130,8 @@ resource "google_compute_security_policy" "app" {
       enforce_on_key = "IP"
 
       rate_limit_threshold {
-        count        = 5
-        interval_sec = 60
+        count        = var.cloud_armor.reset_rate_limit_count
+        interval_sec = var.cloud_armor.reset_rate_limit_window
       }
     }
   }
@@ -212,6 +235,30 @@ resource "google_compute_security_policy" "app" {
     match {
       expr {
         expression = "evaluatePreconfiguredExpr('cve-canary')"
+      }
+    }
+  }
+
+  rule {
+    action      = "throttle"
+    priority    = 9000
+    description = "Global rate limit per IP"
+
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+
+    rate_limit_options {
+      conform_action = "allow"
+      exceed_action  = "deny(429)"
+      enforce_on_key = "IP"
+
+      rate_limit_threshold {
+        count        = var.cloud_armor.global_rate_limit_count
+        interval_sec = var.cloud_armor.global_rate_limit_window
       }
     }
   }
