@@ -1,6 +1,7 @@
 resource "google_sql_database_instance" "main" {
+  #checkov:skip=CKV_GCP_79:Cloud SQL version is configurable for brownfield adoption; default remains the latest supported PostgreSQL major.
   name                = local.cloudsql_name
-  database_version    = "POSTGRES_18"
+  database_version    = var.cloudsql.database_version
   region              = var.region
   project             = var.project_id
   deletion_protection = var.cloudsql.deletion_protection

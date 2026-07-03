@@ -174,6 +174,7 @@ variable "gke" {
     private_endpoint           = optional(bool, false)
     binary_authorization       = optional(bool, true)
     managed_prometheus         = optional(bool, true)
+    notification_topic_id      = optional(string, "")
     master_authorized_networks = optional(list(object({ cidr = string, name = string })), [])
     maintenance_start_time     = optional(string, "2024-01-06T02:00:00Z")
     maintenance_end_time       = optional(string, "2024-01-06T06:00:00Z")
@@ -191,6 +192,7 @@ variable "cloudsql" {
   description = "Cloud SQL PostgreSQL production settings."
   type = object({
     instance_name                     = optional(string)
+    database_version                  = optional(string, "POSTGRES_18")
     tier                              = optional(string, "db-custom-2-7680")
     availability_type                 = optional(string, "REGIONAL")
     disk_size                         = optional(number, 100)

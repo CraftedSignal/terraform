@@ -59,6 +59,17 @@ resource "google_container_cluster" "main" {
     channel = var.gke.release_channel
   }
 
+  notification_config {
+    pubsub {
+      enabled = var.gke.notification_topic_id != ""
+      topic   = var.gke.notification_topic_id != "" ? var.gke.notification_topic_id : null
+
+      filter {
+        event_type = ["UPGRADE_AVAILABLE_EVENT", "UPGRADE_EVENT", "SECURITY_BULLETIN_EVENT"]
+      }
+    }
+  }
+
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
