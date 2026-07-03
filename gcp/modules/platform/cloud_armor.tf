@@ -61,7 +61,7 @@ resource "google_compute_security_policy" "app" {
 
       match {
         expr {
-          expression = "token.recaptcha_action.score < ${var.cloud_armor.recaptcha_score_threshold}"
+          expression = "token.recaptcha_session.score < ${var.cloud_armor.recaptcha_score_threshold}"
         }
       }
     }
