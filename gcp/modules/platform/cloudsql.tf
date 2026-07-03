@@ -1,6 +1,6 @@
 resource "google_sql_database_instance" "main" {
   name                = local.cloudsql_name
-  database_version    = var.cloudsql.database_version
+  database_version    = "POSTGRES_18"
   region              = var.region
   project             = var.project_id
   deletion_protection = var.cloudsql.deletion_protection
@@ -30,11 +30,76 @@ resource "google_sql_database_instance" "main" {
       ipv4_enabled                                  = false
       private_network                               = local.network_id
       enable_private_path_for_google_cloud_services = true
-      ssl_mode                                      = "ENCRYPTED_ONLY"
+      ssl_mode                                      = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
+    }
+
+    database_flags {
+      name  = "cloudsql.enable_pgaudit"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = var.cloudsql.enable_iam_authentication ? "on" : "off"
+    }
+
+    database_flags {
+      name  = "log_checkpoints"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_duration"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_error_verbosity"
+      value = "default"
+    }
+
+    database_flags {
+      name  = "log_hostname"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = "-1"
+    }
+
+    database_flags {
+      name  = "log_min_error_statement"
+      value = "error"
+    }
+
+    database_flags {
+      name  = "log_min_messages"
+      value = "error"
+    }
+
+    database_flags {
+      name  = "log_statement"
+      value = "ddl"
     }
 
     dynamic "database_flags" {
-      for_each = local.cloudsql_flags
+      for_each = var.cloudsql.database_flags
       content {
         name  = database_flags.key
         value = database_flags.value
@@ -155,4 +220,3 @@ resource "google_secret_manager_secret_version" "db_passwords" {
   secret      = google_secret_manager_secret.db_passwords[each.key].id
   secret_data = each.value
 }
-

@@ -7,10 +7,11 @@ module "craftedsignal" {
 
   labels = var.labels
 
+  gke_rbac_security_group = var.gke_rbac_security_group
+
   gke = {
     master_authorized_networks = var.master_authorized_networks
   }
 
   artifact_registry_writer_members = var.artifact_registry_writer_members
 }
-

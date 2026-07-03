@@ -7,11 +7,12 @@ This package is intentionally separate from the internal infrastructure repo. It
 ## What It Creates
 
 - Private GKE Autopilot cluster
-- Private Cloud SQL PostgreSQL instance
+- Private Cloud SQL PostgreSQL 18 instance
 - Private service access and Cloud NAT
-- KMS keys for GKE, Cloud SQL, and Secret Manager
+- KMS keys for GKE, Cloud SQL, Secret Manager, Artifact Registry, and Binary Authorization
+- Binary Authorization policy and attestor
 - Runtime service accounts with Workload Identity bindings
-- Artifact Registry Docker repository
+- Artifact Registry Docker repository with CMEK
 - Secret Manager placeholders for runtime configuration
 - Optional Cloud Armor policy and reCAPTCHA Enterprise key
 
@@ -24,6 +25,8 @@ module "craftedsignal" {
   project_id = "customer-prod-project"
   region     = "europe-west1"
   app_domain = "craftedsignal.example.com"
+
+  gke_rbac_security_group = "gke-security-groups@example.com"
 
   gke = {
     master_authorized_networks = [
@@ -53,4 +56,3 @@ See `examples/production` for a deployable root module.
 - `docs/operations.md`
 - `docs/upgrades.md`
 - `docs/releases.md`
-

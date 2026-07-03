@@ -1,5 +1,5 @@
 resource "google_container_analysis_note" "attestor" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   name    = local.binary_authorization_note_name
   project = var.project_id
@@ -14,7 +14,7 @@ resource "google_container_analysis_note" "attestor" {
 }
 
 resource "google_binary_authorization_attestor" "build" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   name    = local.binary_authorization_attestor_name
   project = var.project_id
@@ -36,7 +36,7 @@ resource "google_binary_authorization_attestor" "build" {
 }
 
 resource "google_binary_authorization_policy" "policy" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   project = var.project_id
 
@@ -57,7 +57,7 @@ resource "google_binary_authorization_policy" "policy" {
 }
 
 resource "google_kms_crypto_key_iam_member" "attestation_signers" {
-  for_each = var.gke.binary_authorization ? toset(var.binary_authorization.attestation_writer_members) : toset([])
+  for_each = toset(var.binary_authorization.attestation_writer_members)
 
   crypto_key_id = google_kms_crypto_key.attestor[0].id
   role          = "roles/cloudkms.signerVerifier"
@@ -65,7 +65,7 @@ resource "google_kms_crypto_key_iam_member" "attestation_signers" {
 }
 
 resource "google_container_analysis_note_iam_member" "attestation_writers" {
-  for_each = var.gke.binary_authorization ? toset(var.binary_authorization.attestation_writer_members) : toset([])
+  for_each = toset(var.binary_authorization.attestation_writer_members)
 
   note    = google_container_analysis_note.attestor[0].name
   project = var.project_id
@@ -74,10 +74,9 @@ resource "google_container_analysis_note_iam_member" "attestation_writers" {
 }
 
 resource "google_project_iam_member" "attestation_occurrence_writers" {
-  for_each = var.gke.binary_authorization ? toset(var.binary_authorization.attestation_writer_members) : toset([])
+  for_each = toset(var.binary_authorization.attestation_writer_members)
 
   project = var.project_id
   role    = "roles/containeranalysis.occurrences.editor"
   member  = each.key
 }
-

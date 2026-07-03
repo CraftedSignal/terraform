@@ -18,6 +18,8 @@ storage:
 
 The app and worker Kubernetes service accounts should be annotated with the GCP service accounts from `service_account_emails`.
 
+Database clients should connect through the Cloud SQL Auth Proxy or Cloud SQL language connectors. The module enforces trusted-client-certificate SSL mode on the instance; direct private-IP clients must provide trusted client certificates.
+
 ## Temporal
 
 The module creates the Temporal databases and a Temporal runtime service account. The deployment layer should run Temporal with either Cloud SQL Auth Proxy or the Cloud SQL connector and use the `temporal` IAM database user or the generated password secret if password users are explicitly enabled.
@@ -29,4 +31,3 @@ The module can create a Cloud Armor security policy. Attach `cloud_armor_securit
 ## Secrets
 
 The module creates Secret Manager secret containers only. Write secret values from the customer secret-management workflow, not from this module, unless the customer accepts Terraform state containing values.
-

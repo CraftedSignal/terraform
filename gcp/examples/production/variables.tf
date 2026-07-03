@@ -14,6 +14,11 @@ variable "app_domain" {
   type        = string
 }
 
+variable "gke_rbac_security_group" {
+  description = "Google Groups for GKE security group, usually gke-security-groups@<workspace-domain>."
+  type        = string
+}
+
 variable "master_authorized_networks" {
   description = "CIDRs allowed to access the public GKE control-plane endpoint."
   type        = list(object({ cidr = string, name = string }))
@@ -31,4 +36,3 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
-

@@ -72,6 +72,11 @@ variable "network" {
     )
     error_message = "When network.create is false, network.network_name and network.subnetwork_name are required."
   }
+
+  validation {
+    condition     = var.network.enable_flow_logs
+    error_message = "network.enable_flow_logs must remain true for production deployments."
+  }
 }
 
 variable "service_account_ids" {
@@ -99,6 +104,16 @@ variable "workload_identity" {
   default = {}
 }
 
+variable "gke_rbac_security_group" {
+  description = "Google Groups for GKE security group used for Kubernetes RBAC user and group bindings. Must be named gke-security-groups@<domain>."
+  type        = string
+
+  validation {
+    condition     = can(regex("^gke-security-groups@[^@]+\\.[^@]+$", var.gke_rbac_security_group))
+    error_message = "gke_rbac_security_group must look like gke-security-groups@example.com."
+  }
+}
+
 variable "gke" {
   description = "GKE Autopilot production cluster settings."
   type = object({
@@ -114,13 +129,17 @@ variable "gke" {
     maintenance_recurrence     = optional(string, "FREQ=WEEKLY;BYDAY=SA,SU")
   })
   default = {}
+
+  validation {
+    condition     = var.gke.binary_authorization
+    error_message = "gke.binary_authorization must remain true for production deployments."
+  }
 }
 
 variable "cloudsql" {
   description = "Cloud SQL PostgreSQL production settings."
   type = object({
     instance_name                     = optional(string)
-    database_version                  = optional(string, "POSTGRES_15")
     tier                              = optional(string, "db-custom-2-7680")
     availability_type                 = optional(string, "REGIONAL")
     disk_size                         = optional(number, 100)
@@ -140,6 +159,25 @@ variable "cloudsql" {
     database_flags                    = optional(map(string), {})
   })
   default = {}
+
+  validation {
+    condition = length(setintersection(toset(keys(var.cloudsql.database_flags)), toset([
+      "cloudsql.enable_pgaudit",
+      "cloudsql.iam_authentication",
+      "log_checkpoints",
+      "log_connections",
+      "log_disconnections",
+      "log_duration",
+      "log_error_verbosity",
+      "log_hostname",
+      "log_lock_waits",
+      "log_min_duration_statement",
+      "log_min_error_statement",
+      "log_min_messages",
+      "log_statement",
+    ]))) == 0
+    error_message = "cloudsql.database_flags cannot override mandatory production logging, audit, or IAM-authentication flags."
+  }
 }
 
 variable "artifact_registry" {

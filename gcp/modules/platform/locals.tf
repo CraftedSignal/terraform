@@ -63,22 +63,6 @@ locals {
   cloud_armor_name  = coalesce(var.cloud_armor.policy_name, "${local.resource_prefix}-waf")
   recaptcha_enabled = var.cloud_armor.enabled && var.cloud_armor.recaptcha_enabled && var.app_domain != ""
 
-  cloudsql_default_flags = {
-    "cloudsql.enable_pgaudit"     = "on"
-    "cloudsql.iam_authentication" = var.cloudsql.enable_iam_authentication ? "on" : "off"
-    "log_checkpoints"             = "on"
-    "log_connections"             = "on"
-    "log_disconnections"          = "on"
-    "log_error_verbosity"         = "default"
-    "log_lock_waits"              = "on"
-    "log_min_duration_statement"  = "-1"
-    "log_min_error_statement"     = "error"
-    "log_min_messages"            = "error"
-    "log_statement"               = "ddl"
-  }
-
-  cloudsql_flags = merge(local.cloudsql_default_flags, var.cloudsql.database_flags)
-
   runtime_service_account_config = {
     app = {
       account_id   = var.service_account_ids.app

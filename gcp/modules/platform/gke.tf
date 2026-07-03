@@ -1,13 +1,19 @@
 resource "google_container_cluster" "main" {
+  #checkov:skip=CKV_GCP_12:GKE Autopilot uses Dataplane V2 for network policy; Terraform rejects network_policy when enable_autopilot is true.
+  #checkov:skip=CKV_GCP_21:Cluster resource_labels merges required labels with caller labels; Checkov does not resolve Terraform merge().
+  #checkov:skip=CKV_GCP_61:Subnetwork flow logs are configured explicitly; intranode visibility is not configurable on GKE Autopilot.
+
   name     = local.cluster_name
   location = var.region
   project  = var.project_id
 
   enable_autopilot    = true
   deletion_protection = var.gke.deletion_protection
+  resource_labels     = local.labels
 
-  network    = local.network_id
-  subnetwork = local.subnetwork_id
+  network           = local.network_id
+  subnetwork        = local.subnetwork_id
+  datapath_provider = "ADVANCED_DATAPATH"
 
   ip_allocation_policy {
     cluster_secondary_range_name  = local.pods_range_name
@@ -30,6 +36,16 @@ resource "google_container_cluster" "main" {
     }
   }
 
+  authenticator_groups_config {
+    security_group = var.gke_rbac_security_group
+  }
+
+  master_auth {
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
@@ -44,7 +60,7 @@ resource "google_container_cluster" "main" {
   }
 
   binary_authorization {
-    evaluation_mode = var.gke.binary_authorization ? "PROJECT_SINGLETON_POLICY_ENFORCE" : "DISABLED"
+    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
 
   logging_config {
@@ -73,9 +89,16 @@ resource "google_container_cluster" "main" {
 
   node_config {
     service_account = google_service_account.gke_nodes.email
-  }
 
-  resource_labels = local.labels
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    shielded_instance_config {
+      enable_secure_boot          = true
+      enable_integrity_monitoring = true
+    }
+  }
 
   depends_on = [
     google_project_service.required,

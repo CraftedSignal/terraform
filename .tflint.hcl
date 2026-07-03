@@ -1,5 +1,5 @@
 config {
-  module = true
+  call_module_type = "all"
 }
 
 plugin "google" {
@@ -7,4 +7,3 @@ plugin "google" {
   version = "0.39.0"
   source  = "github.com/terraform-linters/tflint-ruleset-google"
 }
-

@@ -28,3 +28,4 @@ storage:
 
 Run the database grants in `gcp/docs/database-grants.sql.tpl` after Terraform creates the IAM database users.
 
+Use the Cloud SQL Auth Proxy or Cloud SQL language connectors for application and operator access. The instance enforces trusted-client-certificate SSL mode; direct private-IP clients need trusted client certificates.

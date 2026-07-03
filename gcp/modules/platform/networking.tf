@@ -44,14 +44,27 @@ resource "google_compute_subnetwork" "gke" {
     ip_cidr_range = var.network.services_cidr
   }
 
-  dynamic "log_config" {
-    for_each = var.network.enable_flow_logs ? [1] : []
-    content {
-      aggregation_interval = "INTERVAL_10_MIN"
-      flow_sampling        = var.network.flow_logs_sampling
-      metadata             = "EXCLUDE_ALL_METADATA"
-    }
+  log_config {
+    aggregation_interval = "INTERVAL_10_MIN"
+    flow_sampling        = var.network.flow_logs_sampling
+    metadata             = "EXCLUDE_ALL_METADATA"
   }
+}
+
+resource "google_compute_firewall" "deny_ingress" {
+  count = var.network.create ? 1 : 0
+
+  name      = "${local.resource_prefix}-deny-ingress"
+  network   = google_compute_network.main[0].name
+  project   = var.project_id
+  direction = "INGRESS"
+  priority  = 65534
+
+  deny {
+    protocol = "all"
+  }
+
+  source_ranges = ["0.0.0.0/0"]
 }
 
 resource "google_compute_global_address" "private_services" {
@@ -125,4 +138,3 @@ resource "google_dns_policy" "logging" {
 
   depends_on = [google_project_service.required]
 }
-

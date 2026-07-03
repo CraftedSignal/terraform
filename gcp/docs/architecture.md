@@ -5,11 +5,12 @@ This module provisions the GCP infrastructure layer for a production CraftedSign
 ## Included
 
 - VPC-native private GKE Autopilot cluster with Workload Identity.
-- Private Cloud SQL PostgreSQL with private service access, backups, point-in-time recovery, audit-oriented flags, Query Insights, and CMEK.
+- Private Cloud SQL PostgreSQL 18 with private service access, strict SSL, backups, point-in-time recovery, audit-oriented flags, Query Insights, and CMEK.
 - Runtime service accounts for the app, worker, and Temporal workloads.
 - Cloud SQL IAM database users for passwordless application authentication.
-- Artifact Registry Docker repository for production images.
-- KMS keys for GKE, Cloud SQL, and Secret Manager.
+- Artifact Registry Docker repository for production images with CMEK.
+- KMS keys for GKE, Cloud SQL, Secret Manager, Artifact Registry, and Binary Authorization.
+- Binary Authorization policy and attestor.
 - Secret Manager placeholders for deployment-time configuration.
 - Optional Cloud Armor policy and reCAPTCHA Enterprise site key.
 
@@ -36,4 +37,3 @@ storage:
 ```
 
 For GKE, bind Kubernetes service accounts to the output GCP service accounts through the Workload Identity annotations used by the deployment chart.
-

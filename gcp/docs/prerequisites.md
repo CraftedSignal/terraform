@@ -20,6 +20,11 @@ Use a dedicated production project. The module can enable the required APIs, but
 - Secret Manager secrets.
 - Artifact Registry repositories.
 - Cloud Armor policies and reCAPTCHA Enterprise keys when enabled.
+- Binary Authorization policy, attestor, and Container Analysis note.
+
+## Identity Prerequisites
+
+Create the Google Groups for GKE security group before applying the module. GKE requires the group name format `gke-security-groups@<workspace-or-cloud-identity-domain>`, and the module exposes this as the required `gke_rbac_security_group` input.
 
 ## Terraform State
 
@@ -28,4 +33,3 @@ The package does not create or configure its own Terraform backend. Use a remote
 ## DNS
 
 The module does not manage public DNS records. Point DNS at the ingress or load-balancer address created by the deployment layer.
-

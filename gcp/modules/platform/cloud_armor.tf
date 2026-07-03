@@ -27,6 +27,12 @@ resource "google_compute_security_policy" "app" {
     }
   }
 
+  advanced_options_config {
+    json_parsing                 = "STANDARD"
+    log_level                    = "VERBOSE"
+    request_body_inspection_size = "64KB"
+  }
+
   dynamic "recaptcha_options_config" {
     for_each = local.recaptcha_enabled ? [1] : []
     content {
@@ -198,6 +204,19 @@ resource "google_compute_security_policy" "app" {
   }
 
   rule {
+    action      = "deny(403)"
+    priority    = 3600
+    preview     = var.cloud_armor.waf_preview
+    description = "Apache Log4j CVE canary"
+
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('cve-canary')"
+      }
+    }
+  }
+
+  rule {
     action      = "allow"
     priority    = 2147483647
     description = "Default allow"
@@ -212,4 +231,3 @@ resource "google_compute_security_policy" "app" {
 
   depends_on = [google_project_service.required]
 }
-

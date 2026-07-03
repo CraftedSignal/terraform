@@ -6,9 +6,13 @@ resource "google_artifact_registry_repository" "containers" {
   repository_id = var.artifact_registry.repository_id
   description   = var.artifact_registry.description
   format        = "DOCKER"
+  kms_key_name  = google_kms_crypto_key.artifact_registry.id
   labels        = local.labels
 
-  depends_on = [google_project_service.required]
+  depends_on = [
+    google_kms_crypto_key_iam_member.artifact_registry_encrypt,
+    google_project_service.required,
+  ]
 }
 
 resource "google_artifact_registry_repository_iam_member" "gke_reader" {

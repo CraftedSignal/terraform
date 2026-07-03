@@ -4,8 +4,10 @@ The module defaults are production-oriented:
 
 - GKE nodes are private.
 - Cloud SQL has no public IPv4 address.
-- Cloud SQL requires encrypted client connections and is encrypted with CMEK.
+- Cloud SQL runs PostgreSQL 18, requires trusted-client-certificate SSL mode, and is encrypted with CMEK.
 - Secret Manager secrets are encrypted with CMEK.
+- Artifact Registry is encrypted with CMEK.
+- Binary Authorization is enforced with a KMS-backed attestor.
 - GKE Workload Identity is enabled.
 - Runtime workloads use narrowly scoped service accounts.
 - Artifact Registry writes are granted only to explicit IAM members.
@@ -25,3 +27,4 @@ Detection engineering content can legitimately contain SQL, script-like strings,
 
 Terraform can create Cloud SQL IAM database users. PostgreSQL schema privileges still need to be granted inside the database after the first apply. Use `gcp/docs/database-grants.sql.tpl` as the starting point.
 
+Because Cloud SQL uses `TRUSTED_CLIENT_CERTIFICATE_REQUIRED`, application and Temporal database clients should use the Cloud SQL Auth Proxy or Cloud SQL connectors. Direct private-IP clients must present trusted client certificates.

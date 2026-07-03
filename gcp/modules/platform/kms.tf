@@ -10,22 +10,44 @@ resource "google_kms_crypto_key" "gke" {
   name            = "gke-secrets"
   key_ring        = google_kms_key_ring.main.id
   rotation_period = "7776000s"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_kms_crypto_key" "cloudsql" {
   name            = "cloudsql"
   key_ring        = google_kms_key_ring.main.id
   rotation_period = "7776000s"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_kms_crypto_key" "secrets" {
   name            = "secret-manager"
   key_ring        = google_kms_key_ring.main.id
   rotation_period = "7776000s"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_kms_crypto_key" "artifact_registry" {
+  name            = "artifact-registry"
+  key_ring        = google_kms_key_ring.main.id
+  rotation_period = "7776000s"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "google_kms_crypto_key" "attestor" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   name     = "binary-authorization-attestor"
   key_ring = google_kms_key_ring.main.id
@@ -42,13 +64,13 @@ resource "google_kms_crypto_key" "attestor" {
 }
 
 resource "google_kms_crypto_key_version" "attestor" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   crypto_key = google_kms_crypto_key.attestor[0].id
 }
 
 data "google_kms_crypto_key_version" "attestor_public_key" {
-  count = var.gke.binary_authorization ? 1 : 0
+  count = 1
 
   crypto_key = google_kms_crypto_key.attestor[0].id
 }
@@ -69,4 +91,10 @@ resource "google_kms_crypto_key_iam_member" "secretmanager_encrypt" {
   crypto_key_id = google_kms_crypto_key.secrets.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-secretmanager.iam.gserviceaccount.com"
+}
+
+resource "google_kms_crypto_key_iam_member" "artifact_registry_encrypt" {
+  crypto_key_id = google_kms_crypto_key.artifact_registry.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-artifactregistry.iam.gserviceaccount.com"
 }
