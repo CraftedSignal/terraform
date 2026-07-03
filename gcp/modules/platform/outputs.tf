@@ -43,6 +43,18 @@ output "cluster_location" {
   value       = google_container_cluster.main.location
 }
 
+output "cluster_endpoint" {
+  description = "GKE cluster endpoint."
+  value       = google_container_cluster.main.endpoint
+  sensitive   = true
+}
+
+output "cluster_ca_certificate" {
+  description = "GKE cluster CA certificate."
+  value       = google_container_cluster.main.master_auth[0].cluster_ca_certificate
+  sensitive   = true
+}
+
 output "workload_identity_pool" {
   description = "GKE Workload Identity pool."
   value       = "${var.project_id}.svc.id.goog"
@@ -51,7 +63,7 @@ output "workload_identity_pool" {
 output "service_account_emails" {
   description = "Runtime and node service account emails."
   value = {
-    gke_nodes = google_service_account.gke_nodes.email
+    gke_nodes = local.gke_node_service_account_email
     app       = local.runtime_service_account_emails.app
     worker    = local.runtime_service_account_emails.worker
     temporal  = local.runtime_service_account_emails.temporal
@@ -98,10 +110,11 @@ output "artifact_registry_repository" {
 output "kms_key_ids" {
   description = "KMS key IDs."
   value = {
-    gke      = google_kms_crypto_key.gke.id
-    cloudsql = google_kms_crypto_key.cloudsql.id
-    secrets  = google_kms_crypto_key.secrets.id
-    attestor = try(google_kms_crypto_key.attestor[0].id, null)
+    gke               = local.gke_kms_key_id
+    cloudsql          = local.cloudsql_kms_key_id
+    secrets           = local.secrets_kms_key_id
+    artifact_registry = local.artifact_registry_kms_key_id
+    attestor          = try(google_kms_crypto_key.attestor[0].id, null)
   }
 }
 

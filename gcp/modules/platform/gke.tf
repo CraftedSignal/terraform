@@ -52,7 +52,7 @@ resource "google_container_cluster" "main" {
 
   database_encryption {
     state    = "ENCRYPTED"
-    key_name = google_kms_crypto_key.gke.id
+    key_name = local.gke_kms_key_id
   }
 
   release_channel {
@@ -88,7 +88,7 @@ resource "google_container_cluster" "main" {
   }
 
   node_config {
-    service_account = google_service_account.gke_nodes.email
+    service_account = local.gke_node_service_account_email
 
     workload_metadata_config {
       mode = "GKE_METADATA"

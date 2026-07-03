@@ -1,4 +1,6 @@
 resource "google_service_account" "gke_nodes" {
+  count = local.create_service_accounts ? 1 : 0
+
   account_id   = var.service_account_ids.gke_nodes
   display_name = "CraftedSignal GKE nodes"
   description  = "Node service account for the CraftedSignal production GKE cluster."
@@ -8,7 +10,7 @@ resource "google_service_account" "gke_nodes" {
 }
 
 resource "google_service_account" "runtime" {
-  for_each = local.runtime_service_account_config
+  for_each = local.create_service_accounts ? local.runtime_service_account_config : {}
 
   account_id   = each.value.account_id
   display_name = each.value.display_name
@@ -19,21 +21,21 @@ resource "google_service_account" "runtime" {
 }
 
 resource "google_project_iam_member" "gke_node_roles" {
-  for_each = toset([
+  for_each = local.manage_service_account_iam ? toset([
     "roles/artifactregistry.reader",
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
     "roles/monitoring.viewer",
     "roles/stackdriver.resourceMetadata.writer",
-  ])
+  ]) : toset([])
 
   project = var.project_id
   role    = each.key
-  member  = "serviceAccount:${google_service_account.gke_nodes.email}"
+  member  = "serviceAccount:${local.gke_node_service_account_email}"
 }
 
 resource "google_project_iam_member" "runtime_roles" {
-  for_each = local.runtime_project_role_bindings
+  for_each = local.manage_service_account_iam ? local.runtime_project_role_bindings : {}
 
   project = var.project_id
   role    = each.value.role
@@ -41,10 +43,9 @@ resource "google_project_iam_member" "runtime_roles" {
 }
 
 resource "google_service_account_iam_member" "workload_identity" {
-  for_each = var.workload_identity.enable_bindings ? local.workload_identity_bindings : {}
+  for_each = var.workload_identity.enable_bindings && local.manage_service_account_iam ? local.workload_identity_bindings : {}
 
-  service_account_id = google_service_account.runtime[each.key].name
+  service_account_id = local.runtime_service_account_names[each.key]
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value.namespace}/${each.value.service_account}]"
 }
-

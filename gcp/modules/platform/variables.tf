@@ -58,6 +58,7 @@ variable "network" {
     services_range_name                  = optional(string, "services")
     master_cidr                          = optional(string, "172.16.0.0/28")
     private_service_access_prefix_length = optional(number, 16)
+    create_private_service_access        = optional(bool, true)
     enable_cloud_nat                     = optional(bool, true)
     enable_dns_logging                   = optional(bool, true)
     enable_flow_logs                     = optional(bool, true)
@@ -90,6 +91,32 @@ variable "service_account_ids" {
   default = {}
 }
 
+variable "service_accounts" {
+  description = "Service account creation or adoption settings. Set create=false to use existing service account emails."
+  type = object({
+    create          = optional(bool, true)
+    manage_iam      = optional(bool, true)
+    gke_nodes_email = optional(string)
+    app_email       = optional(string)
+    worker_email    = optional(string)
+    temporal_email  = optional(string)
+  })
+  default = {}
+
+  validation {
+    condition = (
+      var.service_accounts.create ||
+      (
+        var.service_accounts.gke_nodes_email != null &&
+        var.service_accounts.app_email != null &&
+        var.service_accounts.worker_email != null &&
+        var.service_accounts.temporal_email != null
+      )
+    )
+    error_message = "When service_accounts.create is false, gke_nodes_email, app_email, worker_email, and temporal_email are required."
+  }
+}
+
 variable "workload_identity" {
   description = "Kubernetes service accounts bound to GCP service accounts through GKE Workload Identity."
   type = object({
@@ -111,6 +138,30 @@ variable "gke_rbac_security_group" {
   validation {
     condition     = can(regex("^gke-security-groups@[^@]+\\.[^@]+$", var.gke_rbac_security_group))
     error_message = "gke_rbac_security_group must look like gke-security-groups@example.com."
+  }
+}
+
+variable "kms" {
+  description = "KMS creation or adoption settings. Set create=false to use existing key IDs."
+  type = object({
+    create                   = optional(bool, true)
+    manage_iam               = optional(bool, true)
+    gke_key_id               = optional(string)
+    cloudsql_key_id          = optional(string)
+    secrets_key_id           = optional(string)
+    artifact_registry_key_id = optional(string)
+  })
+  default = {}
+
+  validation {
+    condition = (
+      var.kms.create ||
+      (
+        var.kms.gke_key_id != null &&
+        var.kms.cloudsql_key_id != null
+      )
+    )
+    error_message = "When kms.create is false, kms.gke_key_id and kms.cloudsql_key_id are required."
   }
 }
 
@@ -228,6 +279,7 @@ variable "secrets" {
 variable "binary_authorization" {
   description = "Binary Authorization policy, attestor, and attestation writer settings."
   type = object({
+    create_resources           = optional(bool, true)
     enforcement_mode           = optional(string, "DRYRUN_AUDIT_LOG_ONLY")
     attestor_name              = optional(string)
     note_name                  = optional(string)

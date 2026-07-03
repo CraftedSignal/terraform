@@ -4,7 +4,7 @@ resource "google_sql_database_instance" "main" {
   region              = var.region
   project             = var.project_id
   deletion_protection = var.cloudsql.deletion_protection
-  encryption_key_name = google_kms_crypto_key.cloudsql.id
+  encryption_key_name = local.cloudsql_kms_key_id
 
   settings {
     tier                  = var.cloudsql.tier
@@ -200,7 +200,7 @@ resource "google_secret_manager_secret" "db_passwords" {
         location = var.region
 
         customer_managed_encryption {
-          kms_key_name = google_kms_crypto_key.secrets.id
+          kms_key_name = local.secrets_kms_key_id
         }
       }
     }

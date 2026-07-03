@@ -63,6 +63,11 @@ locals {
   cloud_armor_name  = coalesce(var.cloud_armor.policy_name, "${local.resource_prefix}-waf")
   recaptcha_enabled = var.cloud_armor.enabled && var.cloud_armor.recaptcha_enabled && var.app_domain != ""
 
+  create_service_accounts = var.service_accounts.create
+  manage_service_account_iam = (
+    var.service_accounts.create || var.service_accounts.manage_iam
+  )
+
   runtime_service_account_config = {
     app = {
       account_id   = var.service_account_ids.app
@@ -78,10 +83,32 @@ locals {
     }
   }
 
-  runtime_service_account_emails = {
+  gke_node_service_account_email = local.create_service_accounts ? google_service_account.gke_nodes[0].email : var.service_accounts.gke_nodes_email
+
+  runtime_service_account_emails = local.create_service_accounts ? {
     for name, account in google_service_account.runtime :
     name => account.email
+    } : {
+    app      = var.service_accounts.app_email
+    worker   = var.service_accounts.worker_email
+    temporal = var.service_accounts.temporal_email
   }
+
+  runtime_service_account_names = local.create_service_accounts ? {
+    for name, account in google_service_account.runtime :
+    name => account.name
+    } : {
+    app      = "projects/${var.project_id}/serviceAccounts/${var.service_accounts.app_email}"
+    worker   = "projects/${var.project_id}/serviceAccounts/${var.service_accounts.worker_email}"
+    temporal = "projects/${var.project_id}/serviceAccounts/${var.service_accounts.temporal_email}"
+  }
+
+  create_kms_keys                       = var.kms.create
+  gke_kms_key_id                        = local.create_kms_keys ? google_kms_crypto_key.gke[0].id : var.kms.gke_key_id
+  cloudsql_kms_key_id                   = local.create_kms_keys ? google_kms_crypto_key.cloudsql[0].id : var.kms.cloudsql_key_id
+  secrets_kms_key_id                    = local.create_kms_keys ? google_kms_crypto_key.secrets[0].id : var.kms.secrets_key_id
+  artifact_registry_kms_key_id          = local.create_kms_keys ? google_kms_crypto_key.artifact_registry[0].id : var.kms.artifact_registry_key_id
+  create_binary_authorization_resources = var.binary_authorization.create_resources
 
   runtime_database_iam_users = {
     for name, email in local.runtime_service_account_emails :

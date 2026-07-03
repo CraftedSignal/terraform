@@ -10,7 +10,7 @@ resource "google_secret_manager_secret" "managed" {
         location = var.region
 
         customer_managed_encryption {
-          kms_key_name = google_kms_crypto_key.secrets.id
+          kms_key_name = local.secrets_kms_key_id
         }
       }
     }
@@ -46,4 +46,3 @@ resource "google_secret_manager_secret_iam_member" "db_password_access" {
   role   = "roles/secretmanager.secretAccessor"
   member = "serviceAccount:${each.value}"
 }
-

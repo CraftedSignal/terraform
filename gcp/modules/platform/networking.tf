@@ -68,6 +68,8 @@ resource "google_compute_firewall" "deny_ingress" {
 }
 
 resource "google_compute_global_address" "private_services" {
+  count = var.network.create_private_service_access ? 1 : 0
+
   name          = "${local.resource_prefix}-psa"
   project       = var.project_id
   purpose       = "VPC_PEERING"
@@ -79,9 +81,11 @@ resource "google_compute_global_address" "private_services" {
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
+  count = var.network.create_private_service_access ? 1 : 0
+
   network                 = local.network_id
   service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_services.name]
+  reserved_peering_ranges = [google_compute_global_address.private_services[0].name]
 
   depends_on = [google_project_service.required]
 }

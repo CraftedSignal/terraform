@@ -6,7 +6,7 @@ resource "google_artifact_registry_repository" "containers" {
   repository_id = var.artifact_registry.repository_id
   description   = var.artifact_registry.description
   format        = "DOCKER"
-  kms_key_name  = google_kms_crypto_key.artifact_registry.id
+  kms_key_name  = local.artifact_registry_kms_key_id
   labels        = local.labels
 
   depends_on = [
@@ -22,7 +22,7 @@ resource "google_artifact_registry_repository_iam_member" "gke_reader" {
   location   = google_artifact_registry_repository.containers[0].location
   repository = google_artifact_registry_repository.containers[0].repository_id
   role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${google_service_account.gke_nodes.email}"
+  member     = "serviceAccount:${local.gke_node_service_account_email}"
 }
 
 resource "google_artifact_registry_repository_iam_member" "writers" {
