@@ -42,10 +42,10 @@ jobs:
             directory: gcp/examples/production
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
@@ -65,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Set up TFLint
-        uses: terraform-linters/setup-tflint@v6.3.0
+        uses: terraform-linters/setup-tflint@6e1e0642c0289bd619021bf6b34e3c08ed1e005a # v6.3.0
         with:
           tflint_version: ${{ env.TFLINT_VERSION }}
           cache: true
@@ -83,4 +83,3 @@ jobs:
 
       - name: Run TFLint
         run: tflint --recursive --config "$GITHUB_WORKSPACE/.tflint.hcl" -f compact
-

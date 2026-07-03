@@ -150,13 +150,23 @@ locals {
 
   managed_secret_ids = var.secrets.create ? toset(var.secrets.secret_ids) : toset([])
 
-  runtime_secret_access_bindings = merge([
-    for service, service_account in local.runtime_service_account_emails : {
-      for secret_id in local.managed_secret_ids : "${service}/${secret_id}" => {
-        service_account = service_account
+  secret_access_by_service = var.secrets.create ? {
+    for service, secret_ids in var.secrets.access :
+    service => toset([
+      for secret_id in secret_ids : secret_id
+      if contains(tolist(local.managed_secret_ids), secret_id) && contains(keys(local.runtime_service_account_emails), service)
+    ])
+  } : {}
+
+  runtime_secret_access_bindings = merge({}, [
+    for service, secret_ids in local.secret_access_by_service : {
+      for secret_id in secret_ids : "${service}/${secret_id}" => {
+        service_account = local.runtime_service_account_emails[service]
         secret_id       = secret_id
       }
     }
   ]...)
-}
 
+  binary_authorization_attestor_name = coalesce(var.binary_authorization.attestor_name, "${local.resource_prefix}-build")
+  binary_authorization_note_name     = coalesce(var.binary_authorization.note_name, "${local.resource_prefix}-attestor-note")
+}

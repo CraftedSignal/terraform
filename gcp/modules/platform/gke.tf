@@ -80,6 +80,6 @@ resource "google_container_cluster" "main" {
   depends_on = [
     google_project_service.required,
     google_kms_crypto_key_iam_member.gke_encrypt,
+    google_binary_authorization_policy.policy,
   ]
 }
-

@@ -24,6 +24,35 @@ resource "google_kms_crypto_key" "secrets" {
   rotation_period = "7776000s"
 }
 
+resource "google_kms_crypto_key" "attestor" {
+  count = var.gke.binary_authorization ? 1 : 0
+
+  name     = "binary-authorization-attestor"
+  key_ring = google_kms_key_ring.main.id
+  purpose  = "ASYMMETRIC_SIGN"
+
+  version_template {
+    algorithm        = "EC_SIGN_P256_SHA256"
+    protection_level = "HSM"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_kms_crypto_key_version" "attestor" {
+  count = var.gke.binary_authorization ? 1 : 0
+
+  crypto_key = google_kms_crypto_key.attestor[0].id
+}
+
+data "google_kms_crypto_key_version" "attestor_public_key" {
+  count = var.gke.binary_authorization ? 1 : 0
+
+  crypto_key = google_kms_crypto_key.attestor[0].id
+}
+
 resource "google_kms_crypto_key_iam_member" "gke_encrypt" {
   crypto_key_id = google_kms_crypto_key.gke.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
@@ -41,4 +70,3 @@ resource "google_kms_crypto_key_iam_member" "secretmanager_encrypt" {
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-secretmanager.iam.gserviceaccount.com"
 }
-

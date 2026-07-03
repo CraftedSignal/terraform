@@ -178,7 +178,40 @@ variable "secrets" {
   type = object({
     create     = optional(bool, true)
     secret_ids = optional(list(string), ["craftedsignal-master-secret", "craftedsignal-license-key", "craftedsignal-config"])
+    access = optional(map(list(string)), {
+      app      = ["craftedsignal-master-secret", "craftedsignal-license-key", "craftedsignal-config"]
+      worker   = ["craftedsignal-master-secret", "craftedsignal-license-key", "craftedsignal-config"]
+      temporal = []
+    })
   })
   default = {}
 }
 
+variable "binary_authorization" {
+  description = "Binary Authorization policy, attestor, and attestation writer settings."
+  type = object({
+    enforcement_mode           = optional(string, "DRYRUN_AUDIT_LOG_ONLY")
+    attestor_name              = optional(string)
+    note_name                  = optional(string)
+    attestation_writer_members = optional(list(string), [])
+    admission_whitelist_patterns = optional(list(string), [
+      "gke.gcr.io/*",
+      "gcr.io/gke-release/*",
+      "gcr.io/config-management-release/*",
+      "gcr.io/cloud-provider-vsphere/*",
+      "gcr.io/gkeconnect/*",
+      "gcr.io/gke-multi-cloud-release/*",
+      "gcr.io/kubebuilder/*",
+      "europe-west1-docker.pkg.dev/gke-release/*",
+      "europe-west4-docker.pkg.dev/gke-release/*",
+      "us-central1-docker.pkg.dev/gke-release/*",
+      "us-east1-docker.pkg.dev/gke-release/*",
+    ])
+  })
+  default = {}
+
+  validation {
+    condition     = contains(["DRYRUN_AUDIT_LOG_ONLY", "ENFORCED_BLOCK_AND_AUDIT_LOG"], var.binary_authorization.enforcement_mode)
+    error_message = "binary_authorization.enforcement_mode must be DRYRUN_AUDIT_LOG_ONLY or ENFORCED_BLOCK_AND_AUDIT_LOG."
+  }
+}

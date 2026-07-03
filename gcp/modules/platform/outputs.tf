@@ -101,6 +101,7 @@ output "kms_key_ids" {
     gke      = google_kms_crypto_key.gke.id
     cloudsql = google_kms_crypto_key.cloudsql.id
     secrets  = google_kms_crypto_key.secrets.id
+    attestor = try(google_kms_crypto_key.attestor[0].id, null)
   }
 }
 
@@ -124,3 +125,17 @@ output "recaptcha_site_key" {
   value       = try(google_recaptcha_enterprise_key.app[0].name, null)
 }
 
+output "binary_authorization_attestor_name" {
+  description = "Binary Authorization attestor name, if Binary Authorization is enabled."
+  value       = try(google_binary_authorization_attestor.build[0].name, null)
+}
+
+output "binary_authorization_attestor_kms_key_version" {
+  description = "KMS key version used by the Binary Authorization attestor."
+  value       = try(google_kms_crypto_key_version.attestor[0].id, null)
+}
+
+output "binary_authorization_attestor_note_id" {
+  description = "Container Analysis note ID used by the Binary Authorization attestor."
+  value       = try(google_container_analysis_note.attestor[0].id, null)
+}
