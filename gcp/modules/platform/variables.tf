@@ -50,7 +50,9 @@ variable "network" {
   type = object({
     create                               = optional(bool, true)
     network_name                         = optional(string)
+    network_id                           = optional(string)
     subnetwork_name                      = optional(string)
+    subnetwork_id                        = optional(string)
     subnet_cidr                          = optional(string, "10.10.0.0/20")
     pods_cidr                            = optional(string, "10.20.0.0/14")
     services_cidr                        = optional(string, "10.24.0.0/20")
@@ -175,6 +177,7 @@ variable "gke" {
     binary_authorization       = optional(bool, true)
     managed_prometheus         = optional(bool, true)
     notification_topic_id      = optional(string, "")
+    configure_node_config      = optional(bool, true)
     master_authorized_networks = optional(list(object({ cidr = string, name = string })), [])
     maintenance_start_time     = optional(string, "2024-01-06T02:00:00Z")
     maintenance_end_time       = optional(string, "2024-01-06T06:00:00Z")
@@ -193,6 +196,7 @@ variable "cloudsql" {
   type = object({
     instance_name                     = optional(string)
     database_version                  = optional(string, "POSTGRES_18")
+    ssl_mode                          = optional(string, "TRUSTED_CLIENT_CERTIFICATE_REQUIRED")
     tier                              = optional(string, "db-custom-2-7680")
     availability_type                 = optional(string, "REGIONAL")
     disk_size                         = optional(number, 100)

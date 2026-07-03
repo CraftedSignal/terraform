@@ -1,5 +1,6 @@
 resource "google_sql_database_instance" "main" {
   #checkov:skip=CKV_GCP_79:Cloud SQL version is configurable for brownfield adoption; default remains the latest supported PostgreSQL major.
+  #checkov:skip=CKV_GCP_6:SSL mode is configurable for brownfield adoption; default requires trusted client certificates.
   name                = local.cloudsql_name
   database_version    = var.cloudsql.database_version
   region              = var.region
@@ -31,7 +32,7 @@ resource "google_sql_database_instance" "main" {
       ipv4_enabled                                  = false
       private_network                               = local.network_id
       enable_private_path_for_google_cloud_services = true
-      ssl_mode                                      = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
+      ssl_mode                                      = var.cloudsql.ssl_mode
     }
 
     database_flags {

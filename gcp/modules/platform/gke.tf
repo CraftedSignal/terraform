@@ -98,16 +98,19 @@ resource "google_container_cluster" "main" {
     }
   }
 
-  node_config {
-    service_account = local.gke_node_service_account_email
+  dynamic "node_config" {
+    for_each = var.gke.configure_node_config ? [1] : []
+    content {
+      service_account = local.gke_node_service_account_email
 
-    workload_metadata_config {
-      mode = "GKE_METADATA"
-    }
+      workload_metadata_config {
+        mode = "GKE_METADATA"
+      }
 
-    shielded_instance_config {
-      enable_secure_boot          = true
-      enable_integrity_monitoring = true
+      shielded_instance_config {
+        enable_secure_boot          = true
+        enable_integrity_monitoring = true
+      }
     }
   }
 

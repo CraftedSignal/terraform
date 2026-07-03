@@ -44,9 +44,9 @@ locals {
   created_pods_range_name     = try(google_compute_subnetwork.gke[0].secondary_ip_range[0].range_name, null)
   created_services_range_name = try(google_compute_subnetwork.gke[0].secondary_ip_range[1].range_name, null)
 
-  existing_network_id          = try(data.google_compute_network.existing[0].id, null)
+  existing_network_id          = try(coalesce(var.network.network_id, try(data.google_compute_network.existing[0].id, null)), null)
   existing_network_name        = try(data.google_compute_network.existing[0].name, null)
-  existing_subnetwork_id       = try(data.google_compute_subnetwork.existing[0].id, null)
+  existing_subnetwork_id       = try(coalesce(var.network.subnetwork_id, try(data.google_compute_subnetwork.existing[0].id, null)), null)
   existing_subnetwork_name     = try(data.google_compute_subnetwork.existing[0].name, null)
   existing_pods_range_name     = var.network.pods_range_name
   existing_services_range_name = var.network.services_range_name
