@@ -1,0 +1,19 @@
+project_id = "customer-prod-project"
+region     = "europe-west1"
+app_domain = "craftedsignal.example.com"
+
+master_authorized_networks = [
+  {
+    cidr = "203.0.113.10/32"
+    name = "operator-vpn"
+  }
+]
+
+artifact_registry_writer_members = [
+  "principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-actions/attribute.repository/ORG/REPO",
+]
+
+labels = {
+  owner = "security-engineering"
+}
+

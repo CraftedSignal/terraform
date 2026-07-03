@@ -1,0 +1,40 @@
+name: Docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/docs.yml"
+      - "gcp/modules/platform/**/*.tf"
+      - "gcp/modules/platform/README.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/docs.yml"
+      - "gcp/modules/platform/**/*.tf"
+      - "gcp/modules/platform/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform-docs:
+    name: terraform-docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify generated module docs
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          working-dir: gcp/modules/platform
+          output-file: README.md
+          output-method: inject
+          fail-on-diff: "true"
+

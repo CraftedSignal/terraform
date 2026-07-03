@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a module defect or documentation issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: Provider package and module, for example gcp/modules/platform.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What failed and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Minimal Terraform snippet or command output.
+    validations:
+      required: true
+

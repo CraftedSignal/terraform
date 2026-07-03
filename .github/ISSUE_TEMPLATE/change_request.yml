@@ -1,0 +1,26 @@
+name: Change request
+description: Request a new input, output, resource, or provider package.
+title: "[Change]: "
+labels: ["enhancement"]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: Provider package and module, for example gcp/modules/platform.
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What customer or operational problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed interface
+      description: Desired variables, outputs, defaults, or behavior.
+    validations:
+      required: false
