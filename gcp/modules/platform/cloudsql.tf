@@ -80,9 +80,12 @@ resource "google_sql_database_instance" "main" {
       value = "on"
     }
 
+    # Log statements slower than 500 ms to Cloud Logging. This matches the
+    # application SlowQueryHook threshold and drives the Cloud Monitoring
+    # slow-query alert without logging every statement.
     database_flags {
       name  = "log_min_duration_statement"
-      value = "-1"
+      value = "500"
     }
 
     database_flags {
