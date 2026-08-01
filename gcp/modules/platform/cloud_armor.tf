@@ -52,6 +52,18 @@ resource "google_compute_security_policy" "app" {
     }
   }
 
+  rule {
+    action      = "deny(403)"
+    priority    = 950
+    description = "Block debug and pprof endpoints"
+
+    match {
+      expr {
+        expression = "request.path.matches('/debug/.*')"
+      }
+    }
+  }
+
   dynamic "rule" {
     for_each = local.recaptcha_enabled && var.cloud_armor.recaptcha_enforcement ? [1] : []
     content {
