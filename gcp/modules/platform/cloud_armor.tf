@@ -168,7 +168,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('sqli-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('sqli-v422-stable', {'sensitivity': 1})"
       }
     }
   }
@@ -181,7 +181,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('xss-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('xss-v422-stable', {'sensitivity': 1})"
       }
     }
   }
@@ -194,7 +194,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('lfi-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('lfi-v422-stable', {'sensitivity': 1})"
       }
     }
   }
@@ -207,7 +207,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('rfi-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('rfi-v422-stable', {'sensitivity': 1})"
       }
     }
   }
@@ -220,7 +220,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('rce-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('rce-v422-stable', {'sensitivity': 1})"
       }
     }
   }
@@ -233,7 +233,7 @@ resource "google_compute_security_policy" "app" {
 
     match {
       expr {
-        expression = "evaluatePreconfiguredWaf('protocolattack-v33-stable', {'sensitivity': 1})"
+        expression = "evaluatePreconfiguredWaf('protocolattack-v422-stable', {'sensitivity': 1})"
       }
     }
   }
