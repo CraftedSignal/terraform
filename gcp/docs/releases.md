@@ -11,14 +11,25 @@ Use semantic versioning within the provider prefix:
 - Minor: backwards-compatible resources, inputs, or outputs.
 - Patch: fixes and documentation updates.
 
-## Release Checklist
+## Automated Releases
+
+The `Release` GitHub Actions workflow runs on pushes to `main`.
+It discovers changed top-level provider packages, runs the release gates, computes the next provider-scoped SemVer tag from Conventional Commits, and creates the GitHub Release directly.
+
+The first release for a provider starts at `v0.1.0`.
+After that:
+
+- `feat:` commits create a minor release.
+- `!` or `BREAKING CHANGE:` commits create a major release.
+- Other commits that touch the provider package create a patch release.
+
+## Manual Checklist
 
 1. Run `terraform fmt -recursive`.
-2. Run `terraform init -backend=false` and `terraform validate` in `gcp/modules/platform`.
+2. Run `terraform init -backend=false`, `terraform validate`, and `terraform test` in `gcp/modules/platform`.
 3. Run `terraform init -backend=false` and `terraform validate` in each example.
-4. Update `CHANGELOG.md`.
-5. Tag the release, for example `git tag gcp/v0.1.0`.
-6. Publish a GitHub Release with upgrade notes.
+4. Run TFLint, Checkov, and Trivy.
+5. Push to `main` and let CI/CD create the provider tag and GitHub Release.
 
 ## Consumer Pinning
 
@@ -31,4 +42,3 @@ module "craftedsignal" {
 ```
 
 Do not consume `main` from production environments.
-

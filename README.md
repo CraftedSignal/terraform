@@ -27,9 +27,11 @@ terraform/
 Use provider-scoped Git tags:
 
 - `gcp/vMAJOR.MINOR.PATCH`
+- `azure/vMAJOR.MINOR.PATCH` when Azure exists
 - `aws/vMAJOR.MINOR.PATCH` when AWS exists
 
-This allows the GCP package to release independently from future provider packages.
+The release workflow creates these tags and GitHub Releases automatically from `main`.
+Each top-level provider package releases independently when files under that provider directory change.
 
 ## Repository Rules
 
@@ -40,4 +42,3 @@ This allows the GCP package to release independently from future provider packag
 - Provider packages must include production examples, security notes, upgrade notes, and generated module docs.
 
 See `docs/repository-settings.md` for the required GitHub repository settings.
-

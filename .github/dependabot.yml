@@ -20,7 +20,9 @@ updates:
           - "patch"
 
   - package-ecosystem: "terraform"
-    directory: "/gcp/modules/platform"
+    directories:
+      - "/*/modules/*"
+      - "/*/examples/*"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,28 +32,10 @@ updates:
     commit-message:
       prefix: "chore(terraform)"
     groups:
-      gcp-platform-providers:
+      terraform-minor-patch:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
-
-  - package-ecosystem: "terraform"
-    directory: "/gcp/examples/production"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:30"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore(terraform)"
-    groups:
-      gcp-example-providers:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
+        group-by: dependency-name
