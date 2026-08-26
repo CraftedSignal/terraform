@@ -6,7 +6,7 @@ Consumers must pin provider-scoped tags:
 
 ```hcl
 module "craftedsignal" {
-  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.1.0"
+  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.2.0"
 }
 ```
 
@@ -23,4 +23,3 @@ Do not consume `main` from production.
 ## Breaking Changes
 
 Breaking changes require a new major version tag, for example `gcp/v2.0.0`.
-

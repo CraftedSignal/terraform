@@ -152,6 +152,9 @@ variable "kms" {
     cloudsql_key_id          = optional(string)
     secrets_key_id           = optional(string)
     artifact_registry_key_id = optional(string)
+    platform_kek_key_id      = optional(string)
+    attestor_key_id          = optional(string)
+    attestor_key_version     = optional(number, 1)
   })
   default = {}
 
@@ -160,10 +163,98 @@ variable "kms" {
       var.kms.create ||
       (
         var.kms.gke_key_id != null &&
-        var.kms.cloudsql_key_id != null
+        var.kms.cloudsql_key_id != null &&
+        var.kms.secrets_key_id != null &&
+        var.kms.artifact_registry_key_id != null &&
+        var.kms.platform_kek_key_id != null &&
+        var.kms.attestor_key_id != null
       )
     )
-    error_message = "When kms.create is false, kms.gke_key_id and kms.cloudsql_key_id are required."
+    error_message = "When kms.create is false, provide existing gke, cloudsql, secrets, artifact_registry, platform_kek, and attestor KMS key IDs."
+  }
+
+  validation {
+    condition     = var.kms.attestor_key_version >= 1
+    error_message = "kms.attestor_key_version must be 1 or greater."
+  }
+}
+
+variable "application_encryption" {
+  description = "Application-level encryption KEK, runtime IAM, key-broker identity, and optional Confidential Space attestation settings."
+  type = object({
+    platform_kek_name                   = optional(string, "platform-kek")
+    grant_runtime_service_accounts      = optional(bool, false)
+    runtime_services                    = optional(list(string), ["app", "worker"])
+    create_key_broker_service_account   = optional(bool, true)
+    key_broker_service_account_id       = optional(string, "cs-key-broker")
+    key_broker_service_account_email    = optional(string)
+    key_broker_kms_role                 = optional(string, "roles/cloudkms.cryptoKeyEncrypterDecrypter")
+    key_broker_kubernetes_namespace     = optional(string, "craftedsignal")
+    key_broker_kubernetes_service_name  = optional(string, "craftedsignal-key-broker")
+    enable_key_broker_workload_identity = optional(bool, true)
+    confidential_space_attestation = optional(object({
+      enabled                    = optional(bool, false)
+      pool_id                    = optional(string)
+      provider_id                = optional(string, "attestation-verifier")
+      issuer_uri                 = optional(string, "https://confidentialcomputing.googleapis.com")
+      allowed_image_digests      = optional(list(string), [])
+      signing_key_fingerprints   = optional(list(string), [])
+      allowed_service_accounts   = optional(list(string), [])
+      grant_platform_kek_decrypt = optional(bool, false)
+    }), {})
+  })
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for service in var.application_encryption.runtime_services :
+      contains(["app", "worker", "temporal"], service)
+    ])
+    error_message = "application_encryption.runtime_services may contain only app, worker, and temporal."
+  }
+
+  validation {
+    condition = (
+      var.application_encryption.create_key_broker_service_account ||
+      var.application_encryption.key_broker_service_account_email != null
+    )
+    error_message = "application_encryption.key_broker_service_account_email is required when create_key_broker_service_account is false."
+  }
+
+  validation {
+    condition = contains([
+      "roles/cloudkms.cryptoKeyDecrypter",
+      "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+    ], var.application_encryption.key_broker_kms_role)
+    error_message = "application_encryption.key_broker_kms_role must be roles/cloudkms.cryptoKeyDecrypter or roles/cloudkms.cryptoKeyEncrypterDecrypter."
+  }
+
+  validation {
+    condition = (
+      !var.application_encryption.confidential_space_attestation.enabled ||
+      length(var.application_encryption.confidential_space_attestation.allowed_image_digests) > 0 ||
+      length(var.application_encryption.confidential_space_attestation.signing_key_fingerprints) > 0 ||
+      length(var.application_encryption.confidential_space_attestation.allowed_service_accounts) > 0 ||
+      var.application_encryption.create_key_broker_service_account ||
+      var.application_encryption.key_broker_service_account_email != null
+    )
+    error_message = "Confidential Space attestation must restrict at least one of allowed_image_digests, signing_key_fingerprints, allowed_service_accounts, or the key-broker service account."
+  }
+
+  validation {
+    condition = alltrue([
+      for digest in var.application_encryption.confidential_space_attestation.allowed_image_digests :
+      can(regex("^sha256:[0-9a-f]{64}$", digest))
+    ])
+    error_message = "Confidential Space allowed image digests must be lower-case sha256:<64 hex> values."
+  }
+
+  validation {
+    condition = alltrue([
+      for fingerprint in var.application_encryption.confidential_space_attestation.signing_key_fingerprints :
+      can(regex("^[0-9a-f]{64}$", fingerprint))
+    ])
+    error_message = "Confidential Space signing key fingerprints must be lower-case 64-character SHA-256 hex fingerprints."
   }
 }
 
@@ -174,6 +265,7 @@ variable "gke" {
     release_channel            = optional(string, "REGULAR")
     deletion_protection        = optional(bool, true)
     private_endpoint           = optional(bool, false)
+    confidential_nodes         = optional(bool, false)
     binary_authorization       = optional(bool, true)
     managed_prometheus         = optional(bool, true)
     notification_topic_id      = optional(string, "")
@@ -292,7 +384,7 @@ variable "binary_authorization" {
   description = "Binary Authorization policy, attestor, and attestation writer settings."
   type = object({
     create_resources           = optional(bool, true)
-    enforcement_mode           = optional(string, "DRYRUN_AUDIT_LOG_ONLY")
+    enforcement_mode           = optional(string, "ENFORCED_BLOCK_AND_AUDIT_LOG")
     attestor_name              = optional(string)
     note_name                  = optional(string)
     attestation_writer_members = optional(list(string), [])

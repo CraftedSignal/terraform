@@ -63,10 +63,11 @@ output "workload_identity_pool" {
 output "service_account_emails" {
   description = "Runtime and node service account emails."
   value = {
-    gke_nodes = local.gke_node_service_account_email
-    app       = local.runtime_service_account_emails.app
-    worker    = local.runtime_service_account_emails.worker
-    temporal  = local.runtime_service_account_emails.temporal
+    gke_nodes  = local.gke_node_service_account_email
+    app        = local.runtime_service_account_emails.app
+    worker     = local.runtime_service_account_emails.worker
+    temporal   = local.runtime_service_account_emails.temporal
+    key_broker = local.key_broker_service_account_email
   }
 }
 
@@ -114,7 +115,8 @@ output "kms_key_ids" {
     cloudsql          = local.cloudsql_kms_key_id
     secrets           = local.secrets_kms_key_id
     artifact_registry = local.artifact_registry_kms_key_id
-    attestor          = try(google_kms_crypto_key.attestor[0].id, null)
+    platform_kek      = local.platform_kek_kms_key_id
+    attestor          = local.binary_authorization_attestor_kms_key_id
   }
 }
 
@@ -145,10 +147,30 @@ output "binary_authorization_attestor_name" {
 
 output "binary_authorization_attestor_kms_key_version" {
   description = "KMS key version used by the Binary Authorization attestor."
-  value       = try(google_kms_crypto_key_version.attestor[0].id, null)
+  value       = try(data.google_kms_crypto_key_version.attestor_public_key[0].id, null)
 }
 
 output "binary_authorization_attestor_note_id" {
   description = "Container Analysis note ID used by the Binary Authorization attestor."
   value       = try(google_container_analysis_note.attestor[0].id, null)
+}
+
+output "platform_kek_kms_key_id" {
+  description = "Cloud KMS key ID for wrapping application-level tenant data-encryption keys."
+  value       = local.platform_kek_kms_key_id
+}
+
+output "key_broker_service_account_email" {
+  description = "GCP service account email for the application encryption key broker."
+  value       = local.key_broker_service_account_email
+}
+
+output "confidential_space_workload_identity_pool_name" {
+  description = "Confidential Space Workload Identity Pool name for attested encryption-key access, if enabled."
+  value       = try(google_iam_workload_identity_pool.confidential_space[0].name, null)
+}
+
+output "confidential_space_workload_identity_provider_name" {
+  description = "Confidential Space Workload Identity Provider name for attested encryption-key access, if enabled."
+  value       = try(google_iam_workload_identity_pool_provider.confidential_space[0].name, null)
 }

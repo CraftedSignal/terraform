@@ -37,7 +37,7 @@ Consumers should pin a version:
 
 ```hcl
 module "craftedsignal" {
-  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.1.0"
+  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.2.0"
 }
 ```
 

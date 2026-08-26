@@ -20,7 +20,7 @@ terraform/
 
 | Package | Status | Module source |
 | --- | --- | --- |
-| `gcp` | Production-ready initial package | `git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.1.0` |
+| `gcp` | Production-ready package | `git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.2.0` |
 
 ## Release Model
 

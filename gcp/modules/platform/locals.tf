@@ -17,15 +17,18 @@ locals {
     "cloudresourcemanager.googleapis.com",
     "cloudtrace.googleapis.com",
     "compute.googleapis.com",
+    "confidentialcomputing.googleapis.com",
     "container.googleapis.com",
     "containeranalysis.googleapis.com",
     "dns.googleapis.com",
+    "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "logging.googleapis.com",
     "monitoring.googleapis.com",
     "secretmanager.googleapis.com",
     "servicenetworking.googleapis.com",
     "sqladmin.googleapis.com",
+    "sts.googleapis.com",
   ]
 
   project_services = toset(concat(
@@ -108,7 +111,52 @@ locals {
   cloudsql_kms_key_id                   = local.create_kms_keys ? google_kms_crypto_key.cloudsql[0].id : var.kms.cloudsql_key_id
   secrets_kms_key_id                    = local.create_kms_keys ? google_kms_crypto_key.secrets[0].id : var.kms.secrets_key_id
   artifact_registry_kms_key_id          = local.create_kms_keys ? google_kms_crypto_key.artifact_registry[0].id : var.kms.artifact_registry_key_id
+  platform_kek_kms_key_id               = local.create_kms_keys ? google_kms_crypto_key.platform_kek[0].id : var.kms.platform_kek_key_id
   create_binary_authorization_resources = var.binary_authorization.create_resources
+  binary_authorization_attestor_kms_key_id = local.create_binary_authorization_resources ? (
+    local.create_kms_keys ? google_kms_crypto_key.attestor[0].id : var.kms.attestor_key_id
+  ) : null
+
+  create_key_broker_service_account = var.application_encryption.create_key_broker_service_account
+  key_broker_service_account_email  = local.create_key_broker_service_account ? google_service_account.key_broker[0].email : var.application_encryption.key_broker_service_account_email
+  key_broker_service_account_name   = local.create_key_broker_service_account ? google_service_account.key_broker[0].name : "projects/${var.project_id}/serviceAccounts/${var.application_encryption.key_broker_service_account_email}"
+  application_encryption_runtime_services = var.application_encryption.grant_runtime_service_accounts ? toset([
+    for service in var.application_encryption.runtime_services : service
+    if contains(keys(local.runtime_service_account_emails), service)
+  ]) : toset([])
+
+  confidential_space_attestation                   = var.application_encryption.confidential_space_attestation
+  confidential_space_attestation_enabled           = local.confidential_space_attestation.enabled
+  confidential_space_workload_identity_pool_id     = coalesce(local.confidential_space_attestation.pool_id, "${var.name}-${var.environment}-attest")
+  confidential_space_workload_identity_provider_id = local.confidential_space_attestation.provider_id
+  confidential_space_signature_assertions          = [for fingerprint in local.confidential_space_attestation.signing_key_fingerprints : "ECDSA_P256_SHA256:${fingerprint}"]
+  confidential_space_allowed_service_account_emails = (
+    length(local.confidential_space_attestation.allowed_service_accounts) > 0 ?
+    local.confidential_space_attestation.allowed_service_accounts :
+    [local.key_broker_service_account_email]
+  )
+  confidential_space_workload_identity_conditions = concat(
+    length(local.confidential_space_attestation.allowed_image_digests) > 0 ? [
+      "assertion.submods.container.image_digest in ${jsonencode(local.confidential_space_attestation.allowed_image_digests)}",
+    ] : [],
+    length(local.confidential_space_signature_assertions) > 0 ? [
+      "${jsonencode(local.confidential_space_signature_assertions)}.exists(fingerprint, fingerprint in assertion.submods.container.image_signatures.map(sig, sig.signature_algorithm + ':' + sig.key_id))",
+    ] : []
+  )
+  confidential_space_attestation_conditions = concat(
+    [
+      "assertion.swname == 'CONFIDENTIAL_SPACE'",
+      "'STABLE' in assertion.submods.confidential_space.support_attributes",
+      "assertion.submods.gce.project_number == '${data.google_project.current.number}'",
+    ],
+    length(local.confidential_space_workload_identity_conditions) > 0 ? [
+      "(${join(" || ", local.confidential_space_workload_identity_conditions)})",
+    ] : [],
+    length(local.confidential_space_allowed_service_account_emails) > 0 ? [
+      "assertion.google_service_accounts.exists(sa, sa in ${jsonencode(local.confidential_space_allowed_service_account_emails)})",
+    ] : []
+  )
+  confidential_space_attestation_condition = join(" && ", local.confidential_space_attestation_conditions)
 
   runtime_database_iam_users = {
     for name, email in local.runtime_service_account_emails :

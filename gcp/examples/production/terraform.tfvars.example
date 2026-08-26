@@ -11,6 +11,20 @@ master_authorized_networks = [
   }
 ]
 
+enable_confidential_gke_nodes        = false
+enable_confidential_space_attestation = false
+
+# When Confidential Space attestation is enabled, restrict the provider to
+# approved image digests or image-signing key fingerprints. Leave these empty
+# while bootstrapping; production customer KMS grants should set at least one.
+confidential_space_allowed_image_digests = [
+  # "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+]
+
+confidential_space_signing_key_fingerprints = [
+  # "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+]
+
 artifact_registry_writer_members = [
   "principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-actions/attribute.repository/ORG/REPO",
 ]

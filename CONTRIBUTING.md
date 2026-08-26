@@ -7,5 +7,4 @@ Keep this repo customer-facing:
 - Treat variables and outputs as public API.
 - Add upgrade notes for breaking changes.
 - Run `terraform fmt -recursive` and `terraform validate` before opening a PR.
-- Keep provider packages independently releasable with provider-scoped tags such as `gcp/v0.1.0`.
-
+- Keep provider packages independently releasable with provider-scoped tags such as `gcp/v0.2.0`.

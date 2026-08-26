@@ -15,6 +15,11 @@ resource "google_kms_crypto_key" "gke" {
   key_ring        = google_kms_key_ring.main[0].id
   rotation_period = "7776000s"
 
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
+
   lifecycle {
     prevent_destroy = true
   }
@@ -26,6 +31,11 @@ resource "google_kms_crypto_key" "cloudsql" {
   name            = "cloudsql"
   key_ring        = google_kms_key_ring.main[0].id
   rotation_period = "7776000s"
+
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
 
   lifecycle {
     prevent_destroy = true
@@ -39,6 +49,11 @@ resource "google_kms_crypto_key" "secrets" {
   key_ring        = google_kms_key_ring.main[0].id
   rotation_period = "7776000s"
 
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
+
   lifecycle {
     prevent_destroy = true
   }
@@ -50,6 +65,29 @@ resource "google_kms_crypto_key" "artifact_registry" {
   name            = "artifact-registry"
   key_ring        = google_kms_key_ring.main[0].id
   rotation_period = "7776000s"
+
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_kms_crypto_key" "platform_kek" {
+  count = local.create_kms_keys ? 1 : 0
+
+  name            = var.application_encryption.platform_kek_name
+  key_ring        = google_kms_key_ring.main[0].id
+  rotation_period = "7776000s"
+  purpose         = "ENCRYPT_DECRYPT"
+
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
 
   lifecycle {
     prevent_destroy = true
@@ -73,16 +111,11 @@ resource "google_kms_crypto_key" "attestor" {
   }
 }
 
-resource "google_kms_crypto_key_version" "attestor" {
-  count = local.create_kms_keys && local.create_binary_authorization_resources ? 1 : 0
-
-  crypto_key = google_kms_crypto_key.attestor[0].id
-}
-
 data "google_kms_crypto_key_version" "attestor_public_key" {
-  count = local.create_kms_keys && local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
-  crypto_key = google_kms_crypto_key.attestor[0].id
+  crypto_key = local.binary_authorization_attestor_kms_key_id
+  version    = var.kms.attestor_key_version
 }
 
 resource "google_kms_crypto_key_iam_member" "gke_encrypt" {
@@ -115,4 +148,20 @@ resource "google_kms_crypto_key_iam_member" "artifact_registry_encrypt" {
   crypto_key_id = local.artifact_registry_kms_key_id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-artifactregistry.iam.gserviceaccount.com"
+}
+
+resource "google_kms_crypto_key_iam_member" "platform_runtime_encrypt" {
+  for_each = var.kms.manage_iam ? local.application_encryption_runtime_services : toset([])
+
+  crypto_key_id = local.platform_kek_kms_key_id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:${local.runtime_service_account_emails[each.key]}"
+}
+
+resource "google_kms_crypto_key_iam_member" "platform_key_broker_decrypt" {
+  count = var.kms.manage_iam ? 1 : 0
+
+  crypto_key_id = local.platform_kek_kms_key_id
+  role          = var.application_encryption.key_broker_kms_role
+  member        = "serviceAccount:${local.key_broker_service_account_email}"
 }

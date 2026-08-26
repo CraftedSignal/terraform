@@ -33,3 +33,22 @@ output "cloud_armor_security_policy_name" {
   value       = module.craftedsignal.cloud_armor_security_policy_name
 }
 
+output "platform_kek_kms_key_id" {
+  description = "Cloud KMS key ID for wrapping CraftedSignal tenant data-encryption keys."
+  value       = module.craftedsignal.platform_kek_kms_key_id
+}
+
+output "key_broker_service_account_email" {
+  description = "Application encryption key-broker GCP service account."
+  value       = module.craftedsignal.key_broker_service_account_email
+}
+
+output "confidential_space_workload_identity_pool_name" {
+  description = "Confidential Space Workload Identity Pool name for customer KMS IAM grants."
+  value       = module.craftedsignal.confidential_space_workload_identity_pool_name
+}
+
+output "confidential_space_workload_identity_provider_name" {
+  description = "Confidential Space Workload Identity Provider name for attested key access."
+  value       = module.craftedsignal.confidential_space_workload_identity_provider_name
+}

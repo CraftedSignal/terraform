@@ -28,6 +28,22 @@ The module creates the Temporal databases and a Temporal runtime service account
 
 The module can create a Cloud Armor security policy. Attach `cloud_armor_security_policy_name` through the GKE BackendConfig or Gateway policy used by the deployment layer.
 
+## Binary Authorization
+
+The module can enforce Binary Authorization by default. Any deployment workflow that targets a cluster using `PROJECT_SINGLETON_POLICY_ENFORCE` must create an attestation for the exact image digest before Helm or `kubectl apply` rolls out the workload.
+
+For manual GitHub Actions deployments, grant the workflow identity through `binary_authorization.attestation_writer_members`, then add a step like this after the image digest is resolved and before the Kubernetes deployment step:
+
+```bash
+gcloud beta container binauthz attestations sign-and-create \
+  --project "$PROJECT_ID" \
+  --artifact-url "$IMAGE_DIGEST_URL" \
+  --note "$(terraform output -raw binary_authorization_attestor_note_id)" \
+  --keyversion "$(terraform output -raw binary_authorization_attestor_kms_key_version)"
+```
+
+`IMAGE_DIGEST_URL` must be a digest reference such as `REGION-docker.pkg.dev/PROJECT/REPOSITORY/IMAGE@sha256:...`, not a mutable tag. Use `binary_authorization.enforcement_mode = "DRYRUN_AUDIT_LOG_ONLY"` until every image that the workflow deploys is attested.
+
 ## Secrets
 
 The module creates Secret Manager secret containers only. Write secret values from the customer secret-management workflow, not from this module, unless the customer accepts Terraform state containing values.

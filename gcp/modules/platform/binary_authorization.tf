@@ -23,7 +23,7 @@ resource "google_binary_authorization_attestor" "build" {
     note_reference = google_container_analysis_note.attestor[0].name
 
     public_keys {
-      id = google_kms_crypto_key_version.attestor[0].id
+      id = data.google_kms_crypto_key_version.attestor_public_key[0].id
 
       pkix_public_key {
         public_key_pem      = data.google_kms_crypto_key_version.attestor_public_key[0].public_key[0].pem
@@ -59,7 +59,7 @@ resource "google_binary_authorization_policy" "policy" {
 resource "google_kms_crypto_key_iam_member" "attestation_signers" {
   for_each = local.create_binary_authorization_resources ? toset(var.binary_authorization.attestation_writer_members) : toset([])
 
-  crypto_key_id = google_kms_crypto_key.attestor[0].id
+  crypto_key_id = local.binary_authorization_attestor_kms_key_id
   role          = "roles/cloudkms.signerVerifier"
   member        = each.key
 }

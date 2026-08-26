@@ -9,9 +9,11 @@ This package is intentionally separate from the internal infrastructure repo. It
 - Private GKE Autopilot cluster
 - Private Cloud SQL PostgreSQL 18 instance
 - Private service access and Cloud NAT
-- KMS keys for GKE, Cloud SQL, Secret Manager, Artifact Registry, and Binary Authorization
+- KMS keys for GKE, Cloud SQL, Secret Manager, Artifact Registry, Binary Authorization, and application-level tenant DEK wrapping
 - Binary Authorization policy and attestor
 - Runtime service accounts with Workload Identity bindings
+- Application encryption key-broker service account
+- Optional Confidential Space Workload Identity provider for attested KMS access
 - Artifact Registry Docker repository with CMEK
 - Secret Manager placeholders for runtime configuration
 - Optional Cloud Armor policy and reCAPTCHA Enterprise key
@@ -20,7 +22,7 @@ This package is intentionally separate from the internal infrastructure repo. It
 
 ```hcl
 module "craftedsignal" {
-  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.1.0"
+  source = "git::https://github.com/CraftedSignal/terraform.git//gcp/modules/platform?ref=gcp/v0.2.0"
 
   project_id = "customer-prod-project"
   region     = "europe-west1"
@@ -32,6 +34,7 @@ module "craftedsignal" {
     master_authorized_networks = [
       { cidr = "203.0.113.10/32", name = "operator-vpn" }
     ]
+    confidential_nodes = true
   }
 }
 ```
@@ -45,6 +48,7 @@ See `examples/production` for a deployable root module.
 - Consumers must pin provider-scoped Git tags.
 - Secret values should stay outside Terraform unless the customer explicitly accepts storing those values in Terraform state.
 - Kubernetes deployment, DNS, and customer-specific runtime configuration stay in the consuming repo.
+- Deployment workflows must attest image digests before rollout when Binary Authorization enforcement is enabled.
 
 ## Documentation
 
@@ -52,6 +56,8 @@ See `examples/production` for a deployable root module.
 - `docs/architecture.md`
 - `docs/deployment-integration.md`
 - `docs/security.md`
+- `docs/customer-kms.md`
+- `docs/airgap-and-private-deployment.md`
 - `docs/database-grants.sql.tpl`
 - `docs/operations.md`
 - `docs/upgrades.md`
