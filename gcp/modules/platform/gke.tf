@@ -55,8 +55,11 @@ resource "google_container_cluster" "main" {
     key_name = local.gke_kms_key_id
   }
 
-  confidential_nodes {
-    enabled = var.gke.confidential_nodes
+  dynamic "confidential_nodes" {
+    for_each = var.gke.confidential_nodes ? [1] : []
+    content {
+      enabled = true
+    }
   }
 
   release_channel {
