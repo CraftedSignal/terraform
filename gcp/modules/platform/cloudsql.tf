@@ -51,28 +51,8 @@ resource "google_sql_database_instance" "main" {
     }
 
     database_flags {
-      name  = "log_connections"
-      value = "on"
-    }
-
-    database_flags {
-      name  = "log_disconnections"
-      value = "on"
-    }
-
-    database_flags {
-      name  = "log_duration"
-      value = "on"
-    }
-
-    database_flags {
       name  = "log_error_verbosity"
       value = "default"
-    }
-
-    database_flags {
-      name  = "log_hostname"
-      value = "on"
     }
 
     database_flags {
