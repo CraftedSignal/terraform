@@ -17,8 +17,8 @@ Use the package README and `gcp/docs` for architecture, security, and operations
 
 | Name | Version |
 |------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | 7.39.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.9.0 |
+| <a name="provider_google"></a> [google](#provider\_google) | ~> 7.31 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.6 |
 
 ## Modules
 
