@@ -9,12 +9,13 @@ resource "google_sql_database_instance" "main" {
   encryption_key_name = local.cloudsql_kms_key_id
 
   settings {
-    tier                  = var.cloudsql.tier
-    availability_type     = var.cloudsql.availability_type
-    disk_size             = var.cloudsql.disk_size
-    disk_type             = "PD_SSD"
-    disk_autoresize       = true
-    disk_autoresize_limit = var.cloudsql.disk_autoresize_limit
+    tier                        = var.cloudsql.tier
+    availability_type           = var.cloudsql.availability_type
+    disk_size                   = var.cloudsql.disk_size
+    disk_type                   = "PD_SSD"
+    disk_autoresize             = true
+    disk_autoresize_limit       = var.cloudsql.disk_autoresize_limit
+    deletion_protection_enabled = var.cloudsql.deletion_protection
 
     backup_configuration {
       enabled                        = true

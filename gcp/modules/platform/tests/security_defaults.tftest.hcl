@@ -66,6 +66,14 @@ run "security_defaults" {
 
   assert {
     condition = alltrue([
+      google_sql_database_instance.main.deletion_protection,
+      google_sql_database_instance.main.settings[0].deletion_protection_enabled,
+    ])
+    error_message = "Cloud SQL deletion protection must be enforced by both Terraform and the Cloud SQL API."
+  }
+
+  assert {
+    condition = alltrue([
       google_kms_crypto_key.gke[0].version_template[0].protection_level == "HSM",
       google_kms_crypto_key.cloudsql[0].version_template[0].protection_level == "HSM",
       google_kms_crypto_key.secrets[0].version_template[0].protection_level == "HSM",
