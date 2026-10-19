@@ -295,6 +295,7 @@ variable "cloudsql" {
     disk_autoresize_limit             = optional(number, 1000)
     deletion_protection               = optional(bool, true)
     retained_backups                  = optional(number, 30)
+    retain_backups_on_delete          = optional(bool, true)
     backup_start_time                 = optional(string, "03:00")
     maintenance_day                   = optional(number, 7)
     maintenance_hour                  = optional(number, 3)
