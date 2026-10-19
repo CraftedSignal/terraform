@@ -16,6 +16,7 @@ resource "google_sql_database_instance" "main" {
     disk_autoresize             = true
     disk_autoresize_limit       = var.cloudsql.disk_autoresize_limit
     deletion_protection_enabled = var.cloudsql.deletion_protection
+    retain_backups_on_delete    = var.cloudsql.retain_backups_on_delete
 
     backup_configuration {
       enabled                        = true

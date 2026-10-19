@@ -68,8 +68,9 @@ run "security_defaults" {
     condition = alltrue([
       google_sql_database_instance.main.deletion_protection,
       google_sql_database_instance.main.settings[0].deletion_protection_enabled,
+      google_sql_database_instance.main.settings[0].retain_backups_on_delete,
     ])
-    error_message = "Cloud SQL deletion protection must be enforced by both Terraform and the Cloud SQL API."
+    error_message = "Cloud SQL deletion protection must be enforced by Terraform and the API, with backups retained after deletion."
   }
 
   assert {
