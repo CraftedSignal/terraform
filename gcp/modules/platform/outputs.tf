@@ -49,6 +49,12 @@ output "cluster_endpoint" {
   sensitive   = true
 }
 
+output "cluster_dns_endpoint" {
+  description = "GKE cluster IAM-authenticated DNS endpoint, when enabled."
+  value       = try(google_container_cluster.main.control_plane_endpoints_config[0].dns_endpoint_config[0].endpoint, null)
+  sensitive   = true
+}
+
 output "cluster_ca_certificate" {
   description = "GKE cluster CA certificate."
   value       = google_container_cluster.main.master_auth[0].cluster_ca_certificate
