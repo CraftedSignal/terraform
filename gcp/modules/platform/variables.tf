@@ -261,19 +261,20 @@ variable "application_encryption" {
 variable "gke" {
   description = "GKE Autopilot production cluster settings."
   type = object({
-    cluster_name               = optional(string)
-    release_channel            = optional(string, "REGULAR")
-    deletion_protection        = optional(bool, true)
-    private_endpoint           = optional(bool, false)
-    confidential_nodes         = optional(bool, false)
-    binary_authorization       = optional(bool, true)
-    managed_prometheus         = optional(bool, true)
-    notification_topic_id      = optional(string, "")
-    configure_node_config      = optional(bool, true)
-    master_authorized_networks = optional(list(object({ cidr = string, name = string })), [])
-    maintenance_start_time     = optional(string, "2024-01-06T02:00:00Z")
-    maintenance_end_time       = optional(string, "2024-01-06T06:00:00Z")
-    maintenance_recurrence     = optional(string, "FREQ=WEEKLY;BYDAY=SA,SU")
+    cluster_name                 = optional(string)
+    release_channel              = optional(string, "REGULAR")
+    deletion_protection          = optional(bool, true)
+    private_endpoint             = optional(bool, false)
+    confidential_nodes           = optional(bool, false)
+    binary_authorization         = optional(bool, true)
+    managed_prometheus           = optional(bool, true)
+    notification_topic_id        = optional(string, "")
+    configure_node_config        = optional(bool, true)
+    dns_endpoint_external_access = optional(bool, false)
+    master_authorized_networks   = optional(list(object({ cidr = string, name = string })), [])
+    maintenance_start_time       = optional(string, "2024-01-06T02:00:00Z")
+    maintenance_end_time         = optional(string, "2024-01-06T06:00:00Z")
+    maintenance_recurrence       = optional(string, "FREQ=WEEKLY;BYDAY=SA,SU")
   })
   default = {}
 

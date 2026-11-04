@@ -146,6 +146,25 @@ run "confidential_nodes_enabled" {
   }
 }
 
+run "dns_endpoint_external_access" {
+  command = plan
+
+  variables {
+    gke = {
+      dns_endpoint_external_access = true
+    }
+  }
+
+  assert {
+    condition = alltrue([
+      google_container_cluster.main.control_plane_endpoints_config[0].dns_endpoint_config[0].allow_external_traffic,
+      !google_container_cluster.main.control_plane_endpoints_config[0].dns_endpoint_config[0].enable_k8s_tokens_via_dns,
+      !google_container_cluster.main.control_plane_endpoints_config[0].dns_endpoint_config[0].enable_k8s_certs_via_dns,
+    ])
+    error_message = "GKE DNS endpoint access must use IAM and keep Kubernetes token and certificate authentication disabled."
+  }
+}
+
 run "confidential_space_attestation" {
   command = plan
 

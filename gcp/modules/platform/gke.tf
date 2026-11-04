@@ -36,6 +36,18 @@ resource "google_container_cluster" "main" {
     }
   }
 
+  dynamic "control_plane_endpoints_config" {
+    for_each = var.gke.dns_endpoint_external_access ? [1] : []
+
+    content {
+      dns_endpoint_config {
+        allow_external_traffic    = true
+        enable_k8s_tokens_via_dns = false
+        enable_k8s_certs_via_dns  = false
+      }
+    }
+  }
+
   authenticator_groups_config {
     security_group = var.gke_rbac_security_group
   }
