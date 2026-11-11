@@ -109,6 +109,13 @@ resource "google_container_cluster" "main" {
     enabled = true
   }
 
+  dynamic "pod_autoscaling" {
+    for_each = var.gke.hpa_profile == null ? [] : [var.gke.hpa_profile]
+    content {
+      hpa_profile = pod_autoscaling.value
+    }
+  }
+
   maintenance_policy {
     recurring_window {
       start_time = var.gke.maintenance_start_time

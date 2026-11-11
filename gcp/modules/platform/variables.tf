@@ -275,8 +275,17 @@ variable "gke" {
     maintenance_start_time       = optional(string, "2024-01-06T02:00:00Z")
     maintenance_end_time         = optional(string, "2024-01-06T06:00:00Z")
     maintenance_recurrence       = optional(string, "FREQ=WEEKLY;BYDAY=SA,SU")
+    # Horizontal Pod Autoscaler profile: "PERFORMANCE" or "NONE". null keeps
+    # GKE's default. PERFORMANCE runs the GKE-managed autoscaling-metrics-
+    # exporter, which logs an ERROR whenever its upstream stream is recycled.
+    hpa_profile = optional(string)
   })
   default = {}
+
+  validation {
+    condition     = var.gke.hpa_profile == null || contains(["PERFORMANCE", "NONE"], coalesce(var.gke.hpa_profile, "NONE"))
+    error_message = "gke.hpa_profile must be null, \"PERFORMANCE\" or \"NONE\"."
+  }
 
   validation {
     condition     = var.gke.binary_authorization

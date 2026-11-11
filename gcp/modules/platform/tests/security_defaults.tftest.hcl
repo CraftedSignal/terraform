@@ -232,3 +232,39 @@ run "reject_disabled_binary_authorization" {
     var.gke,
   ]
 }
+
+run "hpa_profile_default_unset" {
+  command = plan
+
+  assert {
+    condition     = length(google_container_cluster.main.pod_autoscaling) == 0
+    error_message = "pod_autoscaling must not be set unless gke.hpa_profile is."
+  }
+}
+
+run "hpa_profile_none" {
+  command = plan
+
+  variables {
+    gke = {
+      hpa_profile = "NONE"
+    }
+  }
+
+  assert {
+    condition     = google_container_cluster.main.pod_autoscaling[0].hpa_profile == "NONE"
+    error_message = "gke.hpa_profile must reach the cluster's pod_autoscaling block."
+  }
+}
+
+run "hpa_profile_rejects_unknown" {
+  command = plan
+
+  variables {
+    gke = {
+      hpa_profile = "FAST"
+    }
+  }
+
+  expect_failures = [var.gke]
+}
