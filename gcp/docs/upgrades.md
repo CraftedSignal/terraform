@@ -12,6 +12,12 @@ module "craftedsignal" {
 
 Do not consume `main` from production.
 
+## Google Provider v8
+
+The platform module supports Google provider versions `>= 7.31, < 9.0`. Keep a provider version constraint in the consuming root module; the production example retains its v7 constraint so upgrading this module alone does not select a new provider major version.
+
+Before selecting v8, review the [Google provider v8 upgrade guide](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/version_8_upgrade) for all resources in the root configuration. In particular, existing classic load balancers must explicitly set `load_balancing_scheme = "EXTERNAL"` on backend services and global forwarding rules to preserve their behavior. The platform module does not create those resources.
+
 ## Upgrade Process
 
 1. Read the release notes for every version between the current and target tag.
